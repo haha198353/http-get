@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -20,6 +21,7 @@ type hl7 struct {
 	Pagesize    string
 	Jsonkey1    string
 	Jsonkey2    string
+	Jsonkey3    string
 	chuancan    string
 }
 
@@ -35,22 +37,32 @@ func main() {
 
 	hl7data := readinifile(Inifilename)
 	hl7data.chuancan = Qingqiu1t + hl7data.Pagesize + Qingqiu1b
-	customerId := strings.Split(GetcustomerId(hl7data, getpage(hl7data)), ",")
+	customerId := strings.Split(Getdata(hl7data, getpage(hl7data)), ",")
+
+	hl7data.Jsonkey1 = hl7data.Jsonkey3
+	customerName := strings.Split(Getdata(hl7data, getpage(hl7data)), ",")
 
 	hl7data.Suburl1 = hl7data.Suburl2
+	hl7data.Jsonkey1 = hl7data.Jsonkey2
 	PNumberList := ""
+	count1 := 0
 
 	for _, cid1 := range customerId {
 		cid1 = strings.Trim(cid1, "[")
 		cid1 = strings.Trim(cid1, "]")
 		hl7data.chuancan = Qingqiu2t + cid1 + Qingqiu2b
-		fmt.Printf("Processed 1 item data.customerId is ")
-		fmt.Println(cid1)
-		PNumberList = PNumberList + GetPhoneNumber(hl7data, getpage(hl7data)) + "\n"
+		PNumberList = customerName[count1] + "," + Getdata(hl7data, getpage(hl7data)) + "\n"
+		fmt.Println("Processed " + strconv.Itoa(count1) + "/" + hl7data.Pagesize + " item data.customerId is " + cid1 + ". customerName & Phone Number is :" + strings.Replace(PNumberList, "\n", "", -1))
+		// if count1 == 100 {
+		// 	appendToFile(Outputfilename, PNumberList)
+		// 	count1 = 0
+		// 	PNumberList = ""
+		// }else{
+		// 	count1 = count1 + 1
+		// }
+		count1 = count1 + 1
+		appendToFile(Outputfilename, PNumberList)
 	}
-
-	//fmt.Println(name2)
-	appendToFile(Outputfilename, PNumberList)
 }
 
 func getpage(hl7data hl7) string {
@@ -76,13 +88,8 @@ func getpage(hl7data hl7) string {
 	return string(body)
 }
 
-func GetcustomerId(hl7data hl7, jsonstr string) string {
+func Getdata(hl7data hl7, jsonstr string) string {
 	resulta := gjson.Get(jsonstr, hl7data.Jsonkey1)
-	return resulta.String()
-}
-
-func GetPhoneNumber(hl7data hl7, jsonstr string) string {
-	resulta := gjson.Get(jsonstr, hl7data.Jsonkey2)
 	return resulta.String()
 }
 
@@ -114,6 +121,7 @@ func readinifile(Inifilename string) hl7 {
 				Pagesize    string
 				Jsonkey1    string
 				Jsonkey2    string
+				Jsonkey3    string
 			}
 		}{}
 
@@ -130,6 +138,7 @@ func readinifile(Inifilename string) hl7 {
 			hl7data.Pagesize = strings.TrimSpace(config.HL7order.Pagesize)
 			hl7data.Jsonkey1 = strings.TrimSpace(config.HL7order.Jsonkey1)
 			hl7data.Jsonkey2 = strings.TrimSpace(config.HL7order.Jsonkey2)
+			hl7data.Jsonkey3 = strings.TrimSpace(config.HL7order.Jsonkey3)
 		}
 	} else {
 		fmt.Println(err)
