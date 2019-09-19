@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/csv"
 	"fmt"
 	"github.com/tidwall/gjson"
 	"gopkg.in/gcfg.v1"
@@ -32,7 +33,7 @@ func main() {
 	Qingqiu2t := `{"customerId":"`
 	Qingqiu2b := `"}`
 
-	Outputfilename := "PN.txt"
+	Outputfilename := "PN.CSV"
 	Inifilename := "config.ini"
 
 	hl7data := readinifile(Inifilename)
@@ -44,24 +45,30 @@ func main() {
 
 	hl7data.Suburl1 = hl7data.Suburl2
 	hl7data.Jsonkey1 = hl7data.Jsonkey2
-	PNumberList := ""
+	//PNumberList := ""
 	count1 := 0
+
+	f, err := os.Create(Outputfilename)
+	if err != nil {
+		panic(err)
+	}
+	defer f.Close()
+	f.WriteString("\xEF\xBB\xBF")
+	w := csv.NewWriter(f)
+	w.Write([]string{"学员姓名", "学员性别", "学员手机号", "qq", "微信", "项目(必填)", "学历", "年龄", "证件类型", "证件号码", "客户来源", "创建人", "创建时间(yyyy-MM-dd HH:mm:ss)", "地域(必填)", "归属人", "回访次数", "下次回访时间(yyyy-MM-dd HH:mm:ss)", "备注"})
 
 	for _, cid1 := range customerId {
 		cid1 = strings.Trim(cid1, "[")
 		cid1 = strings.Trim(cid1, "]")
 		hl7data.chuancan = Qingqiu2t + cid1 + Qingqiu2b
-		PNumberList = customerName[count1] + "," + Getdata(hl7data, getpage(hl7data)) + "\n"
-		fmt.Println("Processed " + strconv.Itoa(count1) + "/" + hl7data.Pagesize + " item data.customerId is " + cid1 + ". customerName & Phone Number is :" + strings.Replace(PNumberList, "\n", "", -1))
-		// if count1 == 100 {
-		// 	appendToFile(Outputfilename, PNumberList)
-		// 	count1 = 0
-		// 	PNumberList = ""
-		// }else{
-		// 	count1 = count1 + 1
-		// }
+		//PNumberList = customerName[count1] + "," + Getdata(hl7data, getpage(hl7data)) + "\n"
+		fmt.Println("Processed " + strconv.Itoa(count1) + "/" + hl7data.Pagesize + " item data.customerId is " + cid1)
+		//appendToFile(Outputfilename, PNumberList)
+		//fmt.Println(PNumberList)
+		//fmt.Println(strings.Trim(strings.Trim(strings.Trim(customerName[count1],`[`),`]`),`"`),Getdata(hl7data, getpage(hl7data)))
+		w.Write([]string{strings.Trim(strings.Trim(strings.Trim(customerName[count1], `[`), `]`), `"`), "", Getdata(hl7data, getpage(hl7data))})
+		w.Flush()
 		count1 = count1 + 1
-		appendToFile(Outputfilename, PNumberList)
 	}
 }
 
@@ -93,15 +100,15 @@ func Getdata(hl7data hl7, jsonstr string) string {
 	return resulta.String()
 }
 
-func appendToFile(Outputfilename, str string) {
-	f, err := os.OpenFile(Outputfilename, os.O_CREATE|os.O_APPEND|os.O_RDWR, 0660)
-	if err != nil {
-		fmt.Printf("Cannot open file %s!\n")
-		return
-	}
-	defer f.Close()
-	f.WriteString(str)
-}
+// func appendToFile(Outputfilename, str string) {
+// 	f, err := os.OpenFile(Outputfilename, os.O_CREATE|os.O_APPEND|os.O_RDWR, 0660)
+// 	if err != nil {
+// 		fmt.Printf("Cannot open file %s!\n")
+// 		return
+// 	}
+// 	defer f.Close()
+// 	f.WriteString(str)
+// }
 
 func readinifile(Inifilename string) hl7 {
 	hl7data := hl7{}
