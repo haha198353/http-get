@@ -46,8 +46,6 @@ func main() {
 
 	hl7data.Suburl1 = hl7data.Suburl2
 	hl7data.Jsonkey1 = hl7data.Jsonkey2
-	//PNumberList := ""
-	count1 := 0
 
 	f, err := os.Create(Outputfilename)
 	if err != nil {
@@ -61,19 +59,13 @@ func main() {
 
 	w.Write([]string{enc.ConvertString("学员姓名"), enc.ConvertString("学员性别"), enc.ConvertString("学员手机号"), enc.ConvertString("qq"), enc.ConvertString("微信"), enc.ConvertString("项目(必填)"), enc.ConvertString("学历"), enc.ConvertString("年龄"), enc.ConvertString("证件类型"), enc.ConvertString("证件号码"), enc.ConvertString("客户来源"), enc.ConvertString("创建人"), enc.ConvertString("创建时间(yyyy-MM-dd HH:mm:ss)"), enc.ConvertString("地域(必填)"), enc.ConvertString("归属人"), enc.ConvertString("回访次数"), enc.ConvertString("下次回访时间(yyyy-MM-dd HH:mm:ss)"), enc.ConvertString("备注")})
 
-	for _, cid1 := range customerId {
-		cid1 = strings.Trim(cid1, "[")
-		cid1 = strings.Trim(cid1, "]")
+	for count1, cid1 := range customerId { //此处可以声明两个变量，第一个是数组位置的值，第二个代表该数组的值
+		cid1 = strings.Trim(strings.Trim(cid1, `[`), `]`)
 		hl7data.chuancan = Qingqiu2t + cid1 + Qingqiu2b
-		//PNumberList = customerName[count1] + "," + Getdata(hl7data, getpage(hl7data)) + "\n"
-		fmt.Println("Processed " + strconv.Itoa(count1) + "/" + hl7data.Pagesize + " item data.customerId is " + cid1)
-		//appendToFile(Outputfilename, PNumberList)
-		//fmt.Println(PNumberList)
-		//fmt.Println(strings.Trim(strings.Trim(strings.Trim(customerName[count1],`[`),`]`),`"`),Getdata(hl7data, getpage(hl7data)))
+		fmt.Println("Processed " + strconv.Itoa(count1+1) + "/" + hl7data.Pagesize + " item data.customerId is " + cid1)
 
 		w.Write([]string{enc.ConvertString(strings.Trim(strings.Trim(strings.Trim(customerName[count1], `[`), `]`), `"`)), "", Getdata(hl7data, getpage(hl7data))})
 		w.Flush()
-		count1 = count1 + 1
 	}
 }
 
@@ -104,16 +96,6 @@ func Getdata(hl7data hl7, jsonstr string) string {
 	resulta := gjson.Get(jsonstr, hl7data.Jsonkey1)
 	return resulta.String()
 }
-
-// func appendToFile(Outputfilename, str string) {
-// 	f, err := os.OpenFile(Outputfilename, os.O_CREATE|os.O_APPEND|os.O_RDWR, 0660)
-// 	if err != nil {
-// 		fmt.Printf("Cannot open file %s!\n")
-// 		return
-// 	}
-// 	defer f.Close()
-// 	f.WriteString(str)
-// }
 
 func readinifile(Inifilename string) hl7 {
 	hl7data := hl7{}
@@ -156,5 +138,14 @@ func readinifile(Inifilename string) hl7 {
 		fmt.Println(err)
 	}
 	return hl7data
-
 }
+
+// func appendToFile(Outputfilename, str string) {
+// 	f, err := os.OpenFile(Outputfilename, os.O_CREATE|os.O_APPEND|os.O_RDWR, 0660)
+// 	if err != nil {
+// 		fmt.Printf("Cannot open file %s!\n")
+// 		return
+// 	}
+// 	defer f.Close()
+// 	f.WriteString(str)
+// }
