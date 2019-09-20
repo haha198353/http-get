@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/csv"
 	"fmt"
+	"github.com/axgle/mahonia"
 	"github.com/tidwall/gjson"
 	"gopkg.in/gcfg.v1"
 	"io/ioutil"
@@ -55,7 +56,10 @@ func main() {
 	defer f.Close()
 	f.WriteString("\xEF\xBB\xBF")
 	w := csv.NewWriter(f)
-	w.Write([]string{"学员姓名", "学员性别", "学员手机号", "qq", "微信", "项目(必填)", "学历", "年龄", "证件类型", "证件号码", "客户来源", "创建人", "创建时间(yyyy-MM-dd HH:mm:ss)", "地域(必填)", "归属人", "回访次数", "下次回访时间(yyyy-MM-dd HH:mm:ss)", "备注"})
+
+	enc := mahonia.NewEncoder("gbk") //GO默认编码方式为UTF-8，但是Windows识别编码默认为ANSI（简中为GBK），故Windows下使用需要转码，enc.ConvertString为具体转码实现
+
+	w.Write([]string{enc.ConvertString("学员姓名"), enc.ConvertString("学员性别"), enc.ConvertString("学员手机号"), enc.ConvertString("qq"), enc.ConvertString("微信"), enc.ConvertString("项目(必填)"), enc.ConvertString("学历"), enc.ConvertString("年龄"), enc.ConvertString("证件类型"), enc.ConvertString("证件号码"), enc.ConvertString("客户来源"), enc.ConvertString("创建人"), enc.ConvertString("创建时间(yyyy-MM-dd HH:mm:ss)"), enc.ConvertString("地域(必填)"), enc.ConvertString("归属人"), enc.ConvertString("回访次数"), enc.ConvertString("下次回访时间(yyyy-MM-dd HH:mm:ss)"), enc.ConvertString("备注")})
 
 	for _, cid1 := range customerId {
 		cid1 = strings.Trim(cid1, "[")
@@ -66,7 +70,8 @@ func main() {
 		//appendToFile(Outputfilename, PNumberList)
 		//fmt.Println(PNumberList)
 		//fmt.Println(strings.Trim(strings.Trim(strings.Trim(customerName[count1],`[`),`]`),`"`),Getdata(hl7data, getpage(hl7data)))
-		w.Write([]string{strings.Trim(strings.Trim(strings.Trim(customerName[count1], `[`), `]`), `"`), "", Getdata(hl7data, getpage(hl7data))})
+
+		w.Write([]string{enc.ConvertString(strings.Trim(strings.Trim(strings.Trim(customerName[count1], `[`), `]`), `"`)), "", Getdata(hl7data, getpage(hl7data))})
 		w.Flush()
 		count1 = count1 + 1
 	}
