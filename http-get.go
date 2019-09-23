@@ -24,6 +24,7 @@ type hl7 struct {
 	Jsonkey1    string
 	Jsonkey2    string
 	Jsonkey3    string
+	Codetype    string
 	chuancan    string
 }
 
@@ -55,7 +56,7 @@ func main() {
 	f.WriteString("\xEF\xBB\xBF")
 	w := csv.NewWriter(f)
 
-	enc := mahonia.NewEncoder("gbk") //GO默认编码方式为UTF-8，但是Windows识别编码默认为ANSI（简中为GBK），故Windows下使用需要转码，enc.ConvertString为具体转码实现
+	enc := mahonia.NewEncoder(hl7data.Codetype) //GO默认编码方式为UTF-8，但是Windows识别编码默认为ANSI（简中为GBK），故Windows下使用需要转码，enc.ConvertString为具体转码实现
 
 	w.Write([]string{enc.ConvertString("学员姓名"), enc.ConvertString("学员性别"), enc.ConvertString("学员手机号"), enc.ConvertString("qq"), enc.ConvertString("微信"), enc.ConvertString("项目(必填)"), enc.ConvertString("学历"), enc.ConvertString("年龄"), enc.ConvertString("证件类型"), enc.ConvertString("证件号码"), enc.ConvertString("客户来源"), enc.ConvertString("创建人"), enc.ConvertString("创建时间(yyyy-MM-dd HH:mm:ss)"), enc.ConvertString("地域(必填)"), enc.ConvertString("归属人"), enc.ConvertString("回访次数"), enc.ConvertString("下次回访时间(yyyy-MM-dd HH:mm:ss)"), enc.ConvertString("备注")})
 
@@ -116,6 +117,7 @@ func readinifile(Inifilename string) hl7 {
 				Jsonkey1    string
 				Jsonkey2    string
 				Jsonkey3    string
+				Codetype    string
 			}
 		}{}
 
@@ -133,6 +135,7 @@ func readinifile(Inifilename string) hl7 {
 			hl7data.Jsonkey1 = strings.TrimSpace(config.HL7order.Jsonkey1)
 			hl7data.Jsonkey2 = strings.TrimSpace(config.HL7order.Jsonkey2)
 			hl7data.Jsonkey3 = strings.TrimSpace(config.HL7order.Jsonkey3)
+			hl7data.Codetype = strings.TrimSpace(config.HL7order.Codetype)
 		}
 	} else {
 		fmt.Println(err)
