@@ -11,6 +11,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type hl7 struct {
@@ -35,7 +36,8 @@ func main() {
 	Qingqiu2t := `{"customerId":"`
 	Qingqiu2b := `"}`
 
-	Outputfilename := "PN.CSV"
+	t := time.Now()
+	Outputfilename := t.Format("20060102150405") + ".CSV"
 	Inifilename := "config.ini"
 
 	hl7data := readinifile(Inifilename)
@@ -58,14 +60,14 @@ func main() {
 
 	enc := mahonia.NewEncoder(hl7data.Codetype) //GO默认编码方式为UTF-8，但是Windows识别编码默认为ANSI（简中为GBK），故Windows下使用需要转码，enc.ConvertString为具体转码实现
 
-	w.Write([]string{enc.ConvertString("学员姓名"), enc.ConvertString("学员性别"), enc.ConvertString("学员手机号"), enc.ConvertString("qq"), enc.ConvertString("微信"), enc.ConvertString("项目(必填)"), enc.ConvertString("学历"), enc.ConvertString("年龄"), enc.ConvertString("证件类型"), enc.ConvertString("证件号码"), enc.ConvertString("客户来源"), enc.ConvertString("创建人"), enc.ConvertString("创建时间(yyyy-MM-dd HH:mm:ss)"), enc.ConvertString("地域(必填)"), enc.ConvertString("归属人"), enc.ConvertString("回访次数"), enc.ConvertString("下次回访时间(yyyy-MM-dd HH:mm:ss)"), enc.ConvertString("备注")})
+	w.Write([]string{enc.ConvertString("序号"), enc.ConvertString("CID"), enc.ConvertString("学员姓名"), enc.ConvertString("学员性别"), enc.ConvertString("学员手机号"), enc.ConvertString("qq"), enc.ConvertString("微信"), enc.ConvertString("项目(必填)"), enc.ConvertString("学历"), enc.ConvertString("年龄"), enc.ConvertString("证件类型"), enc.ConvertString("证件号码"), enc.ConvertString("客户来源"), enc.ConvertString("创建人"), enc.ConvertString("创建时间(yyyy-MM-dd HH:mm:ss)"), enc.ConvertString("地域(必填)"), enc.ConvertString("归属人"), enc.ConvertString("回访次数"), enc.ConvertString("下次回访时间(yyyy-MM-dd HH:mm:ss)"), enc.ConvertString("备注")})
 
 	for count1, cid1 := range customerId { //此处可以声明两个变量，第一个是数组位置的值，第二个代表该数组的值
 		cid1 = strings.Trim(strings.Trim(cid1, `[`), `]`)
 		hl7data.chuancan = Qingqiu2t + cid1 + Qingqiu2b
 		fmt.Println("Processed " + strconv.Itoa(count1+1) + "/" + hl7data.Pagesize + " item data.customerId is " + cid1)
 
-		w.Write([]string{enc.ConvertString(strings.Trim(strings.Trim(strings.Trim(customerName[count1], `[`), `]`), `"`)), "", Getdata(hl7data, getpage(hl7data))})
+		w.Write([]string{enc.ConvertString(strconv.Itoa(count1 + 1)), enc.ConvertString(cid1), enc.ConvertString(strings.Trim(strings.Trim(strings.Trim(customerName[count1], `[`), `]`), `"`)), "", Getdata(hl7data, getpage(hl7data))})
 		w.Flush()
 	}
 }
