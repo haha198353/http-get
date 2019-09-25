@@ -46,11 +46,11 @@ type hl7 struct {
 
 func main() {
 
-	t := time.Now()
-	Outputfilename := t.Format("20060102150405") + ".CSV"
-	Inifilename := "config.ini"
+	t := time.Now()                                       //取当前时间，精确到秒
+	Outputfilename := t.Format("20060102150405") + ".CSV" //定义输出文件名，避免覆盖
+	Inifilename := "config.ini"                           //读取配置文件的文件名，写死不能更改
 
-	hl7data := readinifile(Inifilename)
+	hl7data := readinifile(Inifilename) //读取配置文件
 
 	hl7data.RquestOption.chuancan = `{` +
 		`"pageNum": ` + hl7data.RquestOption.PageNum + `,` +
@@ -64,33 +64,33 @@ func main() {
 		`"lastTouchEndDate": "` + hl7data.RquestOption.LastTouchEndDate + `23:59:59"` +
 		`}` +
 		`}`
-	customerId := strings.Split(Getdata(hl7data, getpage(hl7data)), ",")
+	customerId := strings.Split(Getdata(hl7data, getpage(hl7data)), ",") //获取 customerId 并切成数组
 
-	hl7data.LinkOption.Jsonkey1 = hl7data.LinkOption.Jsonkey3
-	customerName := strings.Split(Getdata(hl7data, getpage(hl7data)), ",")
+	hl7data.LinkOption.Jsonkey1 = hl7data.LinkOption.Jsonkey3              //重新配置请求参数
+	customerName := strings.Split(Getdata(hl7data, getpage(hl7data)), ",") //获取 customerName 并切成数组
 
-	hl7data.LinkOption.Suburl1 = hl7data.LinkOption.Suburl2
-	hl7data.LinkOption.Jsonkey1 = hl7data.LinkOption.Jsonkey2
+	hl7data.LinkOption.Suburl1 = hl7data.LinkOption.Suburl2   //重新配置请求参数1
+	hl7data.LinkOption.Jsonkey1 = hl7data.LinkOption.Jsonkey2 //重新配置请求参数2
 
-	f, err := os.Create(Outputfilename)
+	f, err := os.Create(Outputfilename) //创建输出文件
 	if err != nil {
 		panic(err)
 	}
 	defer f.Close()
-	f.WriteString("\xEF\xBB\xBF")
+	f.WriteString("\xEF\xBB\xBF") //写入输出文件格式文件头
 	w := csv.NewWriter(f)
 
 	enc := mahonia.NewEncoder(hl7data.LinkOption.Codetype) //GO默认编码方式为UTF-8，但是Windows识别编码默认为ANSI（简中为GBK），故Windows下使用需要转码，enc.ConvertString为具体转码实现
 
-	w.Write([]string{enc.ConvertString("序号"), enc.ConvertString("CID"), enc.ConvertString("学员姓名"), enc.ConvertString("学员性别"), enc.ConvertString("学员手机号"), enc.ConvertString("qq"), enc.ConvertString("微信"), enc.ConvertString("项目(必填)"), enc.ConvertString("学历"), enc.ConvertString("年龄"), enc.ConvertString("证件类型"), enc.ConvertString("证件号码"), enc.ConvertString("客户来源"), enc.ConvertString("创建人"), enc.ConvertString("创建时间(yyyy-MM-dd HH:mm:ss)"), enc.ConvertString("地域(必填)"), enc.ConvertString("归属人"), enc.ConvertString("回访次数"), enc.ConvertString("下次回访时间(yyyy-MM-dd HH:mm:ss)"), enc.ConvertString("备注")})
+	w.Write([]string{enc.ConvertString("序号"), enc.ConvertString("CID"), enc.ConvertString("学员姓名"), enc.ConvertString("学员性别"), enc.ConvertString("学员手机号"), enc.ConvertString("qq"), enc.ConvertString("微信"), enc.ConvertString("项目(必填)"), enc.ConvertString("学历"), enc.ConvertString("年龄"), enc.ConvertString("证件类型"), enc.ConvertString("证件号码"), enc.ConvertString("客户来源"), enc.ConvertString("创建人"), enc.ConvertString("创建时间(yyyy-MM-dd HH:mm:ss)"), enc.ConvertString("地域(必填)"), enc.ConvertString("归属人"), enc.ConvertString("回访次数"), enc.ConvertString("下次回访时间(yyyy-MM-dd HH:mm:ss)"), enc.ConvertString("备注")}) //标题行
 
 	for count1, cid1 := range customerId { //此处可以声明两个变量，第一个是数组位置的值，第二个代表该数组的值
 		cid1 = strings.Trim(strings.Trim(cid1, `[`), `]`)
-		hl7data.RquestOption.chuancan = `{"` + hl7data.LinkOption.Jsonkey0 + `":"` + cid1 + `"}`
-		fmt.Println("Processed " + strconv.Itoa(count1+1) + "/" + hl7data.RquestOption.PageSize + " item data.customerId is " + cid1)
+		hl7data.RquestOption.chuancan = `{"` + hl7data.LinkOption.Jsonkey0 + `":"` + cid1 + `"}`                                      //重新配置请求参数
+		fmt.Println("Processed " + strconv.Itoa(count1+1) + "/" + hl7data.RquestOption.PageSize + " item data.customerId is " + cid1) //屏幕输出，提示进度
 
-		w.Write([]string{enc.ConvertString(strconv.Itoa(count1 + 1)), enc.ConvertString(cid1), enc.ConvertString(strings.Trim(strings.Trim(strings.Trim(customerName[count1], `[`), `]`), `"`)), "", Getdata(hl7data, getpage(hl7data))})
-		w.Flush()
+		w.Write([]string{enc.ConvertString(strconv.Itoa(count1 + 1)), enc.ConvertString(cid1), enc.ConvertString(strings.Trim(strings.Trim(strings.Trim(customerName[count1], `[`), `]`), `"`)), "", Getdata(hl7data, getpage(hl7data))}) //获取 phone1 并和 customerName 、customerId 一并写入文件
+		w.Flush()                                                                                                                                                                                                                         //文件写入刷新
 	}
 }
 
@@ -128,9 +128,8 @@ func readinifile(Inifilename string) hl7 {
 
 	if iniexist != nil {
 
-		//fmt.Println("Found Configure file.\nConfigure file is [" + configurefile + "].")
 		config := hl7{}
-		err := gcfg.ReadFileInto(&config, Inifilename)
+		err := gcfg.ReadFileInto(&config, Inifilename) //读取配置文件内容，项目必须一一严格对应
 		if err != nil {
 			fmt.Println(err, "Failed to parseconfigure file!")
 		} else {
@@ -164,7 +163,7 @@ func readinifile(Inifilename string) hl7 {
 	return hl7data
 }
 
-// func appendToFile(Outputfilename, str string) {
+// func appendToFile(Outputfilename, str string) {  //追加方式写入文件
 // 	f, err := os.OpenFile(Outputfilename, os.O_CREATE|os.O_APPEND|os.O_RDWR, 0660)
 // 	if err != nil {
 // 		fmt.Printf("Cannot open file %s!\n")
