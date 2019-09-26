@@ -86,12 +86,13 @@ func main() {
 
 	for count1, cid1 := range customerId { //此处可以声明两个变量，第一个是数组位置的值，第二个代表该数组的值
 		cid1 = strings.Trim(strings.Trim(cid1, `[`), `]`)
-		hl7data.RquestOption.chuancan = `{"` + hl7data.LinkOption.Jsonkey0 + `":"` + cid1 + `"}`                                      //重新配置请求参数
-		fmt.Println("Processed " + strconv.Itoa(count1+1) + "/" + hl7data.RquestOption.PageSize + " item data.customerId is " + cid1) //屏幕输出，提示进度
+		countstr := strconv.Itoa(count1 + 1)
+		hl7data.RquestOption.chuancan = `{"` + hl7data.LinkOption.Jsonkey0 + `":"` + cid1 + `"}`                        //重新配置请求参数
+		fmt.Println("Processed " + countstr + "/" + hl7data.RquestOption.PageSize + " item data.customerId is " + cid1) //屏幕输出，提示进度
 
-		w.Write([]string{enc.ConvertString(strconv.Itoa(count1 + 1)), enc.ConvertString(cid1), enc.ConvertString(strings.Trim(strings.Trim(strings.Trim(customerName[count1], `[`), `]`), `"`)), "", Getdata(hl7data, getpage(hl7data))}) //获取 phone1 并和 customerName 、customerId 一并写入文件
-		w.Flush()                                                                                                                                                                                                                         //文件写入刷新
+		go w.Write([]string{enc.ConvertString(strconv.Itoa(count1 + 1)), enc.ConvertString(cid1), enc.ConvertString(strings.Trim(strings.Trim(strings.Trim(customerName[count1], `[`), `]`), `"`)), "", Getdata(hl7data, getpage(hl7data))}) //获取 phone1 并和 customerName 、customerId 一并写入文件                                                                                                                                                                                                                      //文件写入刷新
 	}
+	w.Flush()
 }
 
 func getpage(hl7data hl7) string {
